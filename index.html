@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8b3a2d" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1814" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Degree of metallization (R_D) calculator for hematite reduction">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="R_D">
+<meta name="mobile-web-app-capable" content="yes">
+<title>R_D · Degree of Metallization</title>
+<link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="%238b3a2d"/><text x="50" y="67" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="54" font-weight="500" fill="%23f5f1ea">R</text><text x="72" y="78" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="%23f5f1ea">D</text></svg>'>
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" fill="%238b3a2d"/><text x="90" y="118" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="98" font-weight="500" fill="%23f5f1ea">R</text><text x="130" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="40" fill="%23f5f1ea">D</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f1ea;
+  --bg-elev: #fbf8f3;
+  --bg-sunk: #ede8df;
+  --ink: #1a1612;
+  --ink-2: #5c554c;
+  --ink-3: #8a8075;
+  --line: #d8d1c5;
+  --line-strong: #b9b0a2;
+  --accent: #8b3a2d;
+  --accent-soft: #e8d5ce;
+  --accent-ink: #5a2319;
+  --warn-bg: #f3e6c8;
+  --warn-ink: #6b5015;
+  --danger: #9c3030;
+  --ok: #4a6b3a;
+  --region-1: #7a4a1a;
+  --region-2: #2d5a7a;
+  --radius: 8px;
+  --radius-lg: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1814;
+    --bg-elev: #252119;
+    --bg-sunk: #161310;
+    --ink: #ede6dc;
+    --ink-2: #b0a89c;
+    --ink-3: #6e6659;
+    --line: #3a342c;
+    --line-strong: #554d41;
+    --accent: #d28675;
+    --accent-soft: #3d2823;
+    --accent-ink: #f0c4b7;
+    --warn-bg: #3a2f18;
+    --warn-ink: #e0c27d;
+    --danger: #d47272;
+    --ok: #8fb079;
+    --region-1: #c9a47a;
+    --region-2: #87b4d4;
+  }
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 1, "kern" 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body {
+  padding: max(24px, env(safe-area-inset-top)) 20px max(40px, env(safe-area-inset-bottom));
+  max-width: 680px;
+  margin: 0 auto;
+}
+.header {
+  text-align: center;
+  padding: 12px 0 24px;
+  border-bottom: 0.5px solid var(--line);
+  margin-bottom: 24px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+h1 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+h1 em { font-style: italic; color: var(--accent); }
+.formula {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+.formula sub { font-size: 0.7em; }
+.mode-toggle {
+  display: flex;
+  background: var(--bg-sunk);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+.mode-btn {
+  flex: 1;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+  padding: 0 8px;
+}
+.mode-btn:hover { color: var(--ink); }
+.mode-btn.active {
+  background: var(--bg-elev);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.section-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 12px;
+  font-weight: 500;
+}
+.section-label .count {
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.row {
+  background: var(--bg-elev);
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  transition: border-color 0.15s ease;
+}
+.row:focus-within { border-color: var(--line-strong); }
+.row-top {
+  display: grid;
+  grid-template-columns: 1fr 86px 34px;
+  gap: 8px;
+  align-items: center;
+}
+input[type="text"], input[type="number"] {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  background: var(--bg);
+  border: 0.5px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="number"] { text-align: right; }
+input[type="text"]:focus, input[type="number"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.pct-wrap, .mass-wrap { position: relative; }
+.unit-sign {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--ink-3);
+  pointer-events: none;
+  font-family: "IBM Plex Mono", monospace;
+}
+.pct-wrap input, .mass-wrap input { padding-right: 26px; }
+button {
+  background: var(--bg);
+  border: 0.5px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  height: 36px;
+  padding: 0 14px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  -webkit-appearance: none;
+  appearance: none;
+  white-space: nowrap;
+}
+button:hover { background: var(--bg-sunk); border-color: var(--line-strong); }
+button:active { transform: scale(0.97); }
+button.icon { padding: 0; font-size: 20px; line-height: 1; color: var(--ink-3); }
+button.icon:hover { color: var(--danger); border-color: var(--danger); }
+.row-preview {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 7px;
+  letter-spacing: 0.01em;
+}
+.row-preview.error { color: var(--danger); }
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.actions button { flex: 1; }
+.total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 14px;
+  background: var(--bg-sunk);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.total-bar .v {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.total-bar .v.ok { color: var(--ok); }
+.total-bar .v.warn { color: var(--warn-ink); }
+.warn {
+  display: none;
+  padding: 10px 14px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.warn.show { display: block; }
+.region-card {
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 16px 4px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.region-card.r1 { border-left: 3px solid var(--region-1); }
+.region-card.r2 { border-left: 3px solid var(--region-2); }
+.region-card .region-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+.region-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0;
+  flex-shrink: 0;
+}
+.region-card.r1 .region-title { color: var(--region-1); }
+.region-card.r2 .region-title { color: var(--region-2); }
+.region-mass {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+.region-mass label {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.region-mass .mass-wrap { width: 110px; }
+.carbon-mass-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--bg-sunk);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+  border-left: 3px solid var(--accent);
+  gap: 12px;
+}
+.carbon-mass-bar label {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--accent);
+  font-weight: 400;
+}
+.carbon-mass-bar .mass-wrap { width: 130px; }
+.mass-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 16px;
+  background: var(--bg-sunk);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mass-summary .fracs {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.mass-summary .total-v {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.results {
+  margin: 28px 0 20px;
+  padding: 22px 20px;
+  background: var(--bg-elev);
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+.results::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: 20px; right: 20px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+.result-grid .cell { min-width: 0; }
+.cell-label {
+  font-size: 11px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.cell-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.cell.rd {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--line);
+  margin-top: 4px;
+}
+.cell.rd .cell-label { color: var(--accent); }
+.cell.rd .cell-value {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--accent);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.cell.rd .cell-value .pct {
+  font-family: "IBM Plex Mono", monospace;
+  font-style: normal;
+  font-size: 22px;
+  margin-left: 6px;
+  color: var(--accent);
+  vertical-align: 4px;
+}
+.per-region-rds {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--line);
+  margin-top: 4px;
+}
+.per-region-rds .pr-cell {
+  padding: 12px 14px;
+  background: var(--bg-sunk);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--ink-3);
+}
+.per-region-rds .pr-cell.r1 { border-left-color: var(--region-1); }
+.per-region-rds .pr-cell.r2 { border-left-color: var(--region-2); }
+.per-region-rds .pr-label {
+  font-size: 11px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.per-region-rds .pr-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+}
+details {
+  margin-top: 18px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  overflow: hidden;
+}
+summary {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "+";
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px;
+  color: var(--ink-3);
+}
+details[open] summary::after { content: "–"; }
+.breakdown {
+  padding: 0 14px 14px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.breakdown-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  border-top: 0.5px solid var(--line);
+}
+.breakdown-actions button { height: 32px; font-size: 12px; padding: 0 12px; }
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s, opacity 0.25s;
+  z-index: 100;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--line);
+  font-size: 11px;
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.7;
+}
+.footer code { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-2); }
+.hidden { display: none !important; }
+@media (max-width: 420px) {
+  body { padding-left: 16px; padding-right: 16px; }
+  h1 { font-size: 36px; }
+  .cell.rd .cell-value { font-size: 42px; }
+  .cell-value { font-size: 18px; }
+  .region-card .region-header { flex-direction: column; align-items: stretch; gap: 10px; }
+  .region-mass { justify-content: space-between; }
+  .region-mass .mass-wrap { width: 120px; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="eyebrow">Hematite reduction</div>
+  <h1>Degree of <em>metallization</em></h1>
+  <div class="formula">R<sub>D</sub> = (1 − X ⁄ 1.5) × 100&nbsp;&nbsp;·&nbsp;&nbsp;X = n<sub>O</sub> ⁄ n<sub>Fe</sub></div>
+</header>
+
+<div class="mode-toggle" role="tablist">
+  <button class="mode-btn active" data-mode="single" role="tab">Single</button>
+  <button class="mode-btn" data-mode="two-part" role="tab">Two-part</button>
+  <button class="mode-btn" data-mode="carbon" role="tab">Carbon %</button>
+</div>
+
+<datalist id="presets">
+  <option value="Fe"></option><option value="FeO"></option>
+  <option value="Fe2O3"></option><option value="Fe3O4"></option>
+  <option value="Fe3C"></option><option value="Fe5C2"></option>
+  <option value="Fe7C3"></option><option value="FeS"></option>
+  <option value="FeS2"></option><option value="FeCO3"></option>
+  <option value="Fe(OH)3"></option><option value="FeO(OH)"></option>
+  <option value="Fe2SiO4"></option><option value="FeAl2O4"></option>
+  <option value="FeCr2O4"></option><option value="SiO2"></option>
+  <option value="CaO"></option><option value="MgO"></option>
+  <option value="Al2O3"></option>
+</datalist>
+
+<div id="single-mode">
+  <div class="section-label">
+    <span>Sample composition</span>
+    <span class="count" id="count-single">0 compounds</span>
+  </div>
+  <div id="rows-single" class="rows"></div>
+  <div class="actions">
+    <button id="addBtn-single">+ Add compound</button>
+    <button id="resetBtn-single">Reset</button>
+  </div>
+  <div class="total-bar">
+    <span>Total mass percent (100 g basis)</span>
+    <span class="v" id="total-single">0.0%</span>
+  </div>
+</div>
+
+<div id="two-part-mode" class="hidden">
+  <div class="region-card r1">
+    <div class="region-header">
+      <h3 class="region-title">Melted part</h3>
+      <div class="region-mass">
+        <label>Mass</label>
+        <div class="mass-wrap">
+          <input type="number" inputmode="decimal" min="0" step="0.01" id="mass-region1">
+          <span class="unit-sign">g</span>
+        </div>
+      </div>
+    </div>
+    <div id="rows-region1" class="rows"></div>
+    <div class="actions">
+      <button class="add-region-btn" data-region="region1">+ Add compound</button>
+    </div>
+    <div class="total-bar">
+      <span>Composition total</span>
+      <span class="v" id="total-region1">0.0%</span>
+    </div>
+  </div>
+
+  <div class="region-card r2">
+    <div class="region-header">
+      <h3 class="region-title">Surrounding part</h3>
+      <div class="region-mass">
+        <label>Mass</label>
+        <div class="mass-wrap">
+          <input type="number" inputmode="decimal" min="0" step="0.01" id="mass-region2">
+          <span class="unit-sign">g</span>
+        </div>
+      </div>
+    </div>
+    <div id="rows-region2" class="rows"></div>
+    <div class="actions">
+      <button class="add-region-btn" data-region="region2">+ Add compound</button>
+    </div>
+    <div class="total-bar">
+      <span>Composition total</span>
+      <span class="v" id="total-region2">0.0%</span>
+    </div>
+  </div>
+
+  <div class="mass-summary">
+    <span>Total sample mass</span>
+    <span>
+      <span class="total-v" id="total-mass">0</span>
+      <span class="fracs" id="mass-fracs">&nbsp;</span>
+    </span>
+  </div>
+
+  <div class="actions">
+    <button id="resetBtn-twopart">Reset both parts</button>
+  </div>
+</div>
+
+<div id="carbon-mode" class="hidden">
+  <div class="carbon-mass-bar">
+    <label>Sample mass</label>
+    <div class="mass-wrap">
+      <input type="number" inputmode="decimal" min="0" step="0.01" id="mass-carbon">
+      <span class="unit-sign">g</span>
+    </div>
+  </div>
+
+  <div class="section-label">
+    <span>Compound composition</span>
+    <span class="count" id="count-carbon">0 compounds</span>
+  </div>
+  <div id="rows-carbon" class="rows"></div>
+  <div class="actions">
+    <button id="addBtn-carbon">+ Add compound</button>
+    <button id="resetBtn-carbon">Reset</button>
+  </div>
+  <div class="total-bar">
+    <span>Composition total</span>
+    <span class="v" id="total-carbon">0.0%</span>
+  </div>
+</div>
+
+<div id="warn" class="warn"></div>
+
+<div class="results" id="results-rd">
+  <div class="result-grid">
+    <div class="cell">
+      <div class="cell-label">n<sub style="text-transform:lowercase">O</sub> · mol</div>
+      <div class="cell-value" id="nO">—</div>
+    </div>
+    <div class="cell">
+      <div class="cell-label">n<sub style="text-transform:lowercase">Fe</sub> · mol</div>
+      <div class="cell-value" id="nFe">—</div>
+    </div>
+    <div class="cell">
+      <div class="cell-label">X = n<sub style="text-transform:lowercase">O</sub>⁄n<sub style="text-transform:lowercase">Fe</sub></div>
+      <div class="cell-value" id="X">—</div>
+    </div>
+    <div class="cell">
+      <div class="cell-label">Fe mass · O mass</div>
+      <div class="cell-value" id="masses" style="font-size: 14px;">—</div>
+    </div>
+    <div class="cell rd">
+      <div class="cell-label" id="rd-label">R<sub style="text-transform:lowercase">D</sub></div>
+      <div class="cell-value" id="RD">—</div>
+    </div>
+    <div class="per-region-rds hidden" id="per-region-rds">
+      <div class="pr-cell r1">
+        <div class="pr-label">Melted · R<sub style="text-transform:lowercase">D</sub></div>
+        <div class="pr-value" id="RD-region1">—</div>
+      </div>
+      <div class="pr-cell r2">
+        <div class="pr-label">Surrounding · R<sub style="text-transform:lowercase">D</sub></div>
+        <div class="pr-value" id="RD-region2">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="results hidden" id="results-carbon">
+  <div class="result-grid">
+    <div class="cell">
+      <div class="cell-label">Sample mass</div>
+      <div class="cell-value" id="carbon-sample-mass">—</div>
+    </div>
+    <div class="cell">
+      <div class="cell-label">n<sub style="text-transform:lowercase">C</sub> · mol</div>
+      <div class="cell-value" id="carbon-nC">—</div>
+    </div>
+    <div class="cell" style="grid-column: 1 / -1;">
+      <div class="cell-label">Mass of carbon in sample</div>
+      <div class="cell-value" id="carbon-mass-out">—</div>
+    </div>
+    <div class="cell rd">
+      <div class="cell-label">Carbon content</div>
+      <div class="cell-value" id="carbon-pct">—</div>
+    </div>
+  </div>
+</div>
+
+<details>
+  <summary>Calculation breakdown</summary>
+  <div class="breakdown" id="breakdown">Enter compounds above to see the working.</div>
+  <div class="breakdown-actions">
+    <button id="copyBtn">Copy</button>
+    <button id="downloadBtn">Download .txt</button>
+  </div>
+</details>
+
+<div class="footer">
+  Element masses from IUPAC standard atomic weights.<br>
+  Parser supports any formula using common elements, including parentheses — e.g. <code>Fe(OH)3</code>, <code>Ca3(PO4)2</code>.
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+(function() {
+  const ATOMIC_MASS = {
+    H: 1.008, Li: 6.94, Be: 9.012, B: 10.81, C: 12.011, N: 14.007, O: 15.999,
+    F: 18.998, Na: 22.990, Mg: 24.305, Al: 26.982, Si: 28.085, P: 30.974,
+    S: 32.06, Cl: 35.45, K: 39.098, Ca: 40.078, Ti: 47.867, V: 50.942,
+    Cr: 51.996, Mn: 54.938, Fe: 55.845, Co: 58.933, Ni: 58.693, Cu: 63.546,
+    Zn: 65.38, As: 74.922, Br: 79.904, Sr: 87.62, Zr: 91.224, Nb: 92.906,
+    Mo: 95.95, Ag: 107.868, Cd: 112.414, Sn: 118.710, I: 126.904, Ba: 137.327,
+    W: 183.84, Au: 196.967, Hg: 200.592, Pb: 207.2, Bi: 208.980
+  };
+
+  function parseFormula(formula) {
+    const f = (formula || "").trim();
+    if (!f) throw new Error("Empty formula");
+    let i = 0;
+    function parseGroup(inParen) {
+      const counts = {};
+      while (i < f.length) {
+        const c = f[i];
+        if (c === "(") {
+          i++;
+          const inner = parseGroup(true);
+          if (f[i] !== ")") throw new Error("Missing closing )");
+          i++;
+          let num = "";
+          while (i < f.length && /[0-9]/.test(f[i])) { num += f[i]; i++; }
+          const mult = num ? parseInt(num, 10) : 1;
+          for (const el in inner) counts[el] = (counts[el] || 0) + inner[el] * mult;
+        } else if (c === ")") {
+          if (!inParen) throw new Error("Unexpected )");
+          return counts;
+        } else if (/[A-Z]/.test(c)) {
+          let el = c; i++;
+          if (i < f.length && /[a-z]/.test(f[i])) { el += f[i]; i++; }
+          let num = "";
+          while (i < f.length && /[0-9]/.test(f[i])) { num += f[i]; i++; }
+          const n = num ? parseInt(num, 10) : 1;
+          if (!(el in ATOMIC_MASS)) throw new Error("Unknown element: " + el);
+          counts[el] = (counts[el] || 0) + n;
+        } else if (/[\u00B7\.\s]/.test(c)) {
+          i++;
+        } else {
+          throw new Error("Unexpected character: " + c);
+        }
+      }
+      if (inParen) throw new Error("Missing closing )");
+      return counts;
+    }
+    const counts = parseGroup(false);
+    if (Object.keys(counts).length === 0) throw new Error("No elements found");
+    return counts;
+  }
+
+  function molarMass(counts) {
+    let m = 0;
+    for (const el in counts) m += counts[el] * ATOMIC_MASS[el];
+    return m;
+  }
+
+  const STORAGE_KEY = "rd-calc-v3";
+  const defaultState = {
+    mode: "single",
+    single: {
+      rows: [{ formula: "Fe", pct: 50 }, { formula: "FeO", pct: 50 }]
+    },
+    twoPart: {
+      region1: { mass: 20, rows: [{ formula: "Fe", pct: 100 }] },
+      region2: { mass: 80, rows: [{ formula: "Fe2O3", pct: 100 }] }
+    },
+    carbon: {
+      mass: 10,
+      rows: [{ formula: "Fe3C", pct: 80 }, { formula: "Fe", pct: 20 }]
+    }
+  };
+
+  let state;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultState));
+    if (!state || !state.mode || !state.single || !state.twoPart) {
+      state = JSON.parse(JSON.stringify(defaultState));
+    }
+    // Migrate: older saves won't have carbon
+    if (!state.carbon) state.carbon = JSON.parse(JSON.stringify(defaultState.carbon));
+  } catch (e) {
+    state = JSON.parse(JSON.stringify(defaultState));
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function updatePreview(el, r) {
+    if (!r.formula || !r.formula.trim()) {
+      el.textContent = "Enter a chemical formula";
+      el.classList.remove("error");
+      return;
+    }
+    try {
+      const c = parseFormula(r.formula);
+      const fe = c.Fe || 0;
+      const o = c.O || 0;
+      const M = molarMass(c);
+      const other = Object.keys(c).filter(k => k !== "Fe" && k !== "O");
+      let extra = other.length ? "  \u00B7  " + other.map(k => k + "\u00D7" + c[k]).join(" ") : "";
+      el.textContent = "Fe\u00D7" + fe + "   O\u00D7" + o + "   M = " + M.toFixed(3) + " g/mol" + extra;
+      el.classList.remove("error");
+    } catch (e) {
+      el.textContent = "\u26A0 " + e.message;
+      el.classList.add("error");
+    }
+  }
+
+  function createRowElement(r, onChange, onRemove) {
+    const wrap = document.createElement("div");
+    wrap.className = "row";
+    const top = document.createElement("div");
+    top.className = "row-top";
+
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.setAttribute("list", "presets");
+    inp.placeholder = "e.g. Fe2O3";
+    inp.value = r.formula || "";
+    inp.autocapitalize = "off";
+    inp.autocomplete = "off";
+    inp.spellcheck = false;
+    inp.addEventListener("input", e => {
+      r.formula = e.target.value;
+      updatePreview(preview, r);
+      onChange();
+    });
+
+    const pctWrap = document.createElement("div");
+    pctWrap.className = "pct-wrap";
+    const pctInp = document.createElement("input");
+    pctInp.type = "number";
+    pctInp.inputMode = "decimal";
+    pctInp.min = "0"; pctInp.max = "100"; pctInp.step = "0.01";
+    pctInp.value = r.pct;
+    pctInp.addEventListener("input", e => {
+      const v = parseFloat(e.target.value);
+      r.pct = isNaN(v) ? 0 : v;
+      onChange();
+    });
+    const sign = document.createElement("span");
+    sign.className = "unit-sign";
+    sign.textContent = "%";
+    pctWrap.appendChild(pctInp);
+    pctWrap.appendChild(sign);
+
+    const rm = document.createElement("button");
+    rm.className = "icon";
+    rm.textContent = "\u00D7";
+    rm.setAttribute("aria-label", "Remove compound");
+    rm.addEventListener("click", onRemove);
+
+    top.appendChild(inp);
+    top.appendChild(pctWrap);
+    top.appendChild(rm);
+
+    const preview = document.createElement("div");
+    preview.className = "row-preview";
+
+    wrap.appendChild(top);
+    wrap.appendChild(preview);
+    updatePreview(preview, r);
+    return wrap;
+  }
+
+  function computeRegion(rows, mass) {
+    if (!rows || rows.length === 0) return { error: "No compounds entered." };
+    const parsed = [];
+    for (const r of rows) {
+      if (!r.formula || !r.formula.trim()) return { error: "A compound is missing a formula." };
+      try {
+        const counts = parseFormula(r.formula);
+        parsed.push({ formula: r.formula.trim(), counts, M: molarMass(counts), pct: r.pct || 0 });
+      } catch (e) {
+        return { error: "Invalid formula \"" + r.formula + "\": " + e.message };
+      }
+    }
+    const total = rows.reduce((s, r) => s + (r.pct || 0), 0);
+    if (Math.abs(total - 100) > 0.01) {
+      return { error: "Percentages must sum to 100% (currently " + total.toFixed(2) + "%)." };
+    }
+    if (!(mass > 0)) return { error: "Mass must be greater than 0." };
+
+    let nFe = 0, nO = 0;
+    const lines = [];
+    for (const p of parsed) {
+      const compoundMass = mass * (p.pct / 100);
+      const moles = compoundMass / p.M;
+      const feAtoms = p.counts.Fe || 0;
+      const oAtoms = p.counts.O || 0;
+      const nFe_i = moles * feAtoms;
+      const nO_i = moles * oAtoms;
+      nFe += nFe_i;
+      nO += nO_i;
+      lines.push({ formula: p.formula, mass: compoundMass, moles, nFe: nFe_i, nO: nO_i });
+    }
+    return { nFe, nO, parsed, lines, total };
+  }
+
+  const els = {
+    warn: document.getElementById("warn"),
+    nO: document.getElementById("nO"),
+    nFe: document.getElementById("nFe"),
+    X: document.getElementById("X"),
+    masses: document.getElementById("masses"),
+    RD: document.getElementById("RD"),
+    rdLabel: document.getElementById("rd-label"),
+    breakdown: document.getElementById("breakdown"),
+    perRegionRds: document.getElementById("per-region-rds"),
+    RDRegion1: document.getElementById("RD-region1"),
+    RDRegion2: document.getElementById("RD-region2"),
+    totalSingle: document.getElementById("total-single"),
+    totalRegion1: document.getElementById("total-region1"),
+    totalRegion2: document.getElementById("total-region2"),
+    totalMass: document.getElementById("total-mass"),
+    massFracs: document.getElementById("mass-fracs"),
+    countSingle: document.getElementById("count-single"),
+    singleMode: document.getElementById("single-mode"),
+    twoPartMode: document.getElementById("two-part-mode"),
+    carbonMode: document.getElementById("carbon-mode"),
+    resultsRD: document.getElementById("results-rd"),
+    resultsCarbon: document.getElementById("results-carbon"),
+    rowsSingle: document.getElementById("rows-single"),
+    rowsRegion1: document.getElementById("rows-region1"),
+    rowsRegion2: document.getElementById("rows-region2"),
+    rowsCarbon: document.getElementById("rows-carbon"),
+    massRegion1: document.getElementById("mass-region1"),
+    massRegion2: document.getElementById("mass-region2"),
+    massCarbon: document.getElementById("mass-carbon"),
+    totalCarbon: document.getElementById("total-carbon"),
+    countCarbon: document.getElementById("count-carbon"),
+    carbonSampleMass: document.getElementById("carbon-sample-mass"),
+    carbonNC: document.getElementById("carbon-nC"),
+    carbonMassOut: document.getElementById("carbon-mass-out"),
+    carbonPct: document.getElementById("carbon-pct")
+  };
+
+  function clearResults() {
+    els.nO.textContent = els.nFe.textContent = els.X.textContent = els.RD.textContent = els.masses.textContent = "\u2014";
+    els.RDRegion1.textContent = els.RDRegion2.textContent = "\u2014";
+    els.breakdown.textContent = "Complete the inputs above to see the full working.";
+  }
+  function showWarn(msg) {
+    els.warn.textContent = msg;
+    els.warn.classList.add("show");
+  }
+  function hideWarn() { els.warn.classList.remove("show"); }
+  function setTotalStyle(el, total) {
+    el.textContent = total.toFixed(2) + "%";
+    el.className = "v";
+    if (Math.abs(total - 100) < 0.01) el.classList.add("ok");
+    else if (total > 0) el.classList.add("warn");
+  }
+
+  function compute() {
+    if (state.mode === "single") computeSingle();
+    else if (state.mode === "two-part") computeTwoPart();
+    else computeCarbon();
+  }
+
+  function computeSingle() {
+    const rows = state.single.rows;
+    const total = rows.reduce((s, r) => s + (r.pct || 0), 0);
+    setTotalStyle(els.totalSingle, total);
+
+    const result = computeRegion(rows, 100);
+    if (result.error) { showWarn(result.error); clearResults(); return; }
+    hideWarn();
+
+    const { nFe, nO, lines } = result;
+    const X = nO / nFe;
+    const RD = (1 - X / 1.5) * 100;
+    const massFe = nFe * ATOMIC_MASS.Fe;
+    const massO = nO * ATOMIC_MASS.O;
+
+    els.nO.textContent = nO.toFixed(4);
+    els.nFe.textContent = nFe.toFixed(4);
+    els.X.textContent = X.toFixed(4);
+    els.masses.textContent = massFe.toFixed(2) + " g \u00B7 " + massO.toFixed(2) + " g";
+    els.RD.innerHTML = RD.toFixed(2) + '<span class="pct">%</span>';
+    els.rdLabel.innerHTML = 'R<sub style="text-transform:lowercase">D</sub>';
+    els.perRegionRds.classList.add("hidden");
+
+    const out = ["Basis: 100 g sample", ""];
+    out.push("Compound    Mass(g)    mol         n_Fe(mol)   n_O(mol)");
+    out.push("\u2500".repeat(57));
+    for (const L of lines) {
+      out.push(
+        L.formula.padEnd(11) + " " +
+        L.mass.toFixed(2).padStart(7) + "    " +
+        L.moles.toFixed(5) + "     " +
+        L.nFe.toFixed(5) + "     " +
+        L.nO.toFixed(5)
+      );
+    }
+    out.push("");
+    out.push("Total Fe mass = " + massFe.toFixed(3) + " g");
+    out.push("Total O  mass = " + massO.toFixed(3) + " g");
+    out.push("n_Fe = " + nFe.toFixed(5) + " mol");
+    out.push("n_O  = " + nO.toFixed(5) + " mol");
+    out.push("X = n_O / n_Fe = " + X.toFixed(5));
+    out.push("R_D = (1 \u2212 X/1.5) \u00D7 100 = " + RD.toFixed(2) + " %");
+    els.breakdown.textContent = out.join("\n");
+  }
+
+  function computeTwoPart() {
+    const r1Rows = state.twoPart.region1.rows;
+    const r2Rows = state.twoPart.region2.rows;
+    const m1 = state.twoPart.region1.mass || 0;
+    const m2 = state.twoPart.region2.mass || 0;
+
+    const t1 = r1Rows.reduce((s, r) => s + (r.pct || 0), 0);
+    const t2 = r2Rows.reduce((s, r) => s + (r.pct || 0), 0);
+    setTotalStyle(els.totalRegion1, t1);
+    setTotalStyle(els.totalRegion2, t2);
+
+    const totalMass = m1 + m2;
+    els.totalMass.textContent = totalMass.toFixed(2) + " g";
+    if (totalMass > 0) {
+      els.massFracs.textContent =
+        "(" + ((m1 / totalMass) * 100).toFixed(1) + "% melted, " +
+        ((m2 / totalMass) * 100).toFixed(1) + "% surrounding)";
+    } else {
+      els.massFracs.textContent = "";
+    }
+
+    const r1 = computeRegion(r1Rows, m1);
+    if (r1.error) { showWarn("Melted part: " + r1.error); clearResults(); return; }
+    const r2 = computeRegion(r2Rows, m2);
+    if (r2.error) { showWarn("Surrounding part: " + r2.error); clearResults(); return; }
+    hideWarn();
+
+    const nFe = r1.nFe + r2.nFe;
+    const nO = r1.nO + r2.nO;
+    if (nFe === 0) {
+      showWarn("Combined sample contains no iron \u2014 R_D is undefined.");
+      clearResults();
+      return;
+    }
+    const X = nO / nFe;
+    const RD = (1 - X / 1.5) * 100;
+    const massFe = nFe * ATOMIC_MASS.Fe;
+    const massO = nO * ATOMIC_MASS.O;
+
+    els.nO.textContent = nO.toFixed(4);
+    els.nFe.textContent = nFe.toFixed(4);
+    els.X.textContent = X.toFixed(4);
+    els.masses.textContent = massFe.toFixed(2) + " g \u00B7 " + massO.toFixed(2) + " g";
+    els.RD.innerHTML = RD.toFixed(2) + '<span class="pct">%</span>';
+    els.rdLabel.innerHTML = 'Overall R<sub style="text-transform:lowercase">D</sub>';
+
+    function formatRegionRD(r) {
+      if (r.nFe === 0) return "\u2014 (no Fe)";
+      const X_i = r.nO / r.nFe;
+      return ((1 - X_i / 1.5) * 100).toFixed(2) + "%";
+    }
+    els.RDRegion1.textContent = formatRegionRD(r1);
+    els.RDRegion2.textContent = formatRegionRD(r2);
+    els.perRegionRds.classList.remove("hidden");
+
+    const out = ["Two-part sample (total " + totalMass.toFixed(2) + " g)", ""];
+    function writeRegion(title, mass, result) {
+      out.push("\u2500\u2500 " + title + "  (" + mass.toFixed(2) + " g) \u2500\u2500");
+      out.push("Compound    Mass(g)    mol         n_Fe(mol)   n_O(mol)");
+      for (const L of result.lines) {
+        out.push(
+          L.formula.padEnd(11) + " " +
+          L.mass.toFixed(2).padStart(7) + "    " +
+          L.moles.toFixed(5) + "     " +
+          L.nFe.toFixed(5) + "     " +
+          L.nO.toFixed(5)
+        );
+      }
+      out.push("  n_Fe (part) = " + result.nFe.toFixed(5) + " mol");
+      out.push("  n_O  (part) = " + result.nO.toFixed(5) + " mol");
+      if (result.nFe > 0) {
+        const X_i = result.nO / result.nFe;
+        const RD_i = (1 - X_i / 1.5) * 100;
+        out.push("  X (part)    = " + X_i.toFixed(5));
+        out.push("  R_D (part)  = " + RD_i.toFixed(2) + " %");
+      } else {
+        out.push("  R_D (part)  = undefined (no Fe)");
+      }
+      out.push("");
+    }
+    writeRegion("Melted part", m1, r1);
+    writeRegion("Surrounding part", m2, r2);
+
+    out.push("\u2500\u2500 Combined (total sample) \u2500\u2500");
+    out.push("Total Fe mass = " + massFe.toFixed(3) + " g");
+    out.push("Total O  mass = " + massO.toFixed(3) + " g");
+    out.push("n_Fe = " + r1.nFe.toFixed(5) + " + " + r2.nFe.toFixed(5) + " = " + nFe.toFixed(5) + " mol");
+    out.push("n_O  = " + r1.nO.toFixed(5) + " + " + r2.nO.toFixed(5) + " = " + nO.toFixed(5) + " mol");
+    out.push("X = n_O / n_Fe = " + X.toFixed(5));
+    out.push("Overall R_D = (1 \u2212 X/1.5) \u00D7 100 = " + RD.toFixed(2) + " %");
+    els.breakdown.textContent = out.join("\n");
+  }
+
+  function computeCarbon() {
+    const rows = state.carbon.rows;
+    const mass = state.carbon.mass || 0;
+
+    const total = rows.reduce((s, r) => s + (r.pct || 0), 0);
+    setTotalStyle(els.totalCarbon, total);
+
+    if (!(mass > 0)) {
+      showWarn("Sample mass must be greater than 0.");
+      els.carbonSampleMass.textContent = els.carbonNC.textContent = "\u2014";
+      els.carbonMassOut.textContent = els.carbonPct.textContent = "\u2014";
+      els.breakdown.textContent = "Enter a sample mass greater than 0.";
+      return;
+    }
+
+    // Parse every row and validate
+    const parsed = [];
+    for (const r of rows) {
+      if (!r.formula || !r.formula.trim()) {
+        showWarn("A compound is missing a formula.");
+        els.carbonSampleMass.textContent = els.carbonNC.textContent = "\u2014";
+        els.carbonMassOut.textContent = els.carbonPct.textContent = "\u2014";
+        els.breakdown.textContent = "Complete the inputs above to see the full working.";
+        return;
+      }
+      try {
+        const counts = parseFormula(r.formula);
+        parsed.push({ formula: r.formula.trim(), counts, M: molarMass(counts), pct: r.pct || 0 });
+      } catch (e) {
+        showWarn("Invalid formula \"" + r.formula + "\": " + e.message);
+        els.carbonSampleMass.textContent = els.carbonNC.textContent = "\u2014";
+        els.carbonMassOut.textContent = els.carbonPct.textContent = "\u2014";
+        els.breakdown.textContent = "Fix the formula error to see the full working.";
+        return;
+      }
+    }
+    if (Math.abs(total - 100) > 0.01) {
+      showWarn("Percentages must sum to 100% (currently " + total.toFixed(2) + "%).");
+      els.carbonSampleMass.textContent = els.carbonNC.textContent = "\u2014";
+      els.carbonMassOut.textContent = els.carbonPct.textContent = "\u2014";
+      els.breakdown.textContent = "Complete the inputs above to see the full working.";
+      return;
+    }
+    hideWarn();
+
+    const M_C = ATOMIC_MASS.C;
+    let totalC_mass = 0;
+    let totalC_mol = 0;
+    const lines = [];
+
+    for (const p of parsed) {
+      const compoundMass = mass * (p.pct / 100);
+      const moles = compoundMass / p.M;
+      const cAtoms = p.counts.C || 0;
+      const nC_i = moles * cAtoms;
+      const massC_i = nC_i * M_C;
+      totalC_mol += nC_i;
+      totalC_mass += massC_i;
+      lines.push({
+        formula: p.formula, pct: p.pct, M: p.M, mass: compoundMass,
+        moles, cAtoms, nC: nC_i, massC: massC_i
+      });
+    }
+
+    const carbonPct = (totalC_mass / mass) * 100;
+
+    els.carbonSampleMass.textContent = mass.toFixed(2) + " g";
+    els.carbonNC.textContent = totalC_mol.toFixed(5);
+    els.carbonMassOut.textContent = totalC_mass.toFixed(4) + " g";
+    els.carbonPct.innerHTML = carbonPct.toFixed(3) + '<span class="pct">%</span>';
+
+    // Breakdown
+    const out = ["Sample mass: " + mass.toFixed(3) + " g", ""];
+    out.push("Compound    %      Mass(g)   M(g/mol)   mol       C atoms   C mass(g)");
+    out.push("\u2500".repeat(75));
+    for (const L of lines) {
+      out.push(
+        L.formula.padEnd(11) + " " +
+        L.pct.toFixed(2).padStart(6) + " " +
+        L.mass.toFixed(3).padStart(8) + "   " +
+        L.M.toFixed(3).padStart(7) + "   " +
+        L.moles.toFixed(5) + "   " +
+        String(L.cAtoms).padStart(3) + "       " +
+        L.massC.toFixed(4)
+      );
+    }
+    out.push("");
+    out.push("Total C moles = " + totalC_mol.toFixed(5) + " mol");
+    out.push("Total C mass  = " + totalC_mass.toFixed(4) + " g");
+    out.push("C % = (m_C / m_sample) \u00D7 100");
+    out.push("    = (" + totalC_mass.toFixed(4) + " / " + mass.toFixed(3) + ") \u00D7 100");
+    out.push("    = " + carbonPct.toFixed(3) + " %");
+    els.breakdown.textContent = out.join("\n");
+  }
+
+  function renderSingleRows() {
+    els.rowsSingle.innerHTML = "";
+    state.single.rows.forEach((r, i) => {
+      const el = createRowElement(r,
+        () => { compute(); save(); },
+        () => {
+          state.single.rows.splice(i, 1);
+          if (state.single.rows.length === 0) state.single.rows.push({ formula: "", pct: 0 });
+          renderSingleRows(); compute(); save();
+        }
+      );
+      els.rowsSingle.appendChild(el);
+    });
+    els.countSingle.textContent = state.single.rows.length +
+      (state.single.rows.length === 1 ? " compound" : " compounds");
+  }
+
+  function renderRegionRows(key) {
+    const container = key === "region1" ? els.rowsRegion1 : els.rowsRegion2;
+    container.innerHTML = "";
+    state.twoPart[key].rows.forEach((r, i) => {
+      const el = createRowElement(r,
+        () => { compute(); save(); },
+        () => {
+          state.twoPart[key].rows.splice(i, 1);
+          if (state.twoPart[key].rows.length === 0) {
+            state.twoPart[key].rows.push({ formula: "", pct: 0 });
+          }
+          renderRegionRows(key); compute(); save();
+        }
+      );
+      container.appendChild(el);
+    });
+  }
+
+  function renderCarbonRows() {
+    els.rowsCarbon.innerHTML = "";
+    state.carbon.rows.forEach((r, i) => {
+      const el = createRowElement(r,
+        () => { compute(); save(); },
+        () => {
+          state.carbon.rows.splice(i, 1);
+          if (state.carbon.rows.length === 0) state.carbon.rows.push({ formula: "", pct: 0 });
+          renderCarbonRows(); compute(); save();
+        }
+      );
+      els.rowsCarbon.appendChild(el);
+    });
+    els.countCarbon.textContent = state.carbon.rows.length +
+      (state.carbon.rows.length === 1 ? " compound" : " compounds");
+  }
+
+  function renderMode() {
+    document.querySelectorAll(".mode-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.mode === state.mode);
+    });
+    els.singleMode.classList.toggle("hidden", state.mode !== "single");
+    els.twoPartMode.classList.toggle("hidden", state.mode !== "two-part");
+    els.carbonMode.classList.toggle("hidden", state.mode !== "carbon");
+    els.resultsRD.classList.toggle("hidden", state.mode === "carbon");
+    els.resultsCarbon.classList.toggle("hidden", state.mode !== "carbon");
+  }
+
+  function renderAll() {
+    renderMode();
+    renderSingleRows();
+    renderRegionRows("region1");
+    renderRegionRows("region2");
+    renderCarbonRows();
+    els.massRegion1.value = state.twoPart.region1.mass;
+    els.massRegion2.value = state.twoPart.region2.mass;
+    els.massCarbon.value = state.carbon.mass;
+    compute();
+  }
+
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.mode = btn.dataset.mode;
+      save();
+      renderMode();
+      compute();
+    });
+  });
+
+  document.getElementById("addBtn-single").addEventListener("click", () => {
+    state.single.rows.push({ formula: "", pct: 0 });
+    renderSingleRows(); compute(); save();
+  });
+  document.getElementById("resetBtn-single").addEventListener("click", () => {
+    if (!confirm("Clear single-mode inputs and reset to the default example?")) return;
+    state.single.rows = [{ formula: "Fe", pct: 50 }, { formula: "FeO", pct: 50 }];
+    renderSingleRows(); compute(); save();
+  });
+
+  document.querySelectorAll(".add-region-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.region;
+      state.twoPart[key].rows.push({ formula: "", pct: 0 });
+      renderRegionRows(key); compute(); save();
+    });
+  });
+  document.getElementById("resetBtn-twopart").addEventListener("click", () => {
+    if (!confirm("Clear both parts and reset to the default example?")) return;
+    state.twoPart = JSON.parse(JSON.stringify(defaultState.twoPart));
+    renderAll(); save();
+  });
+
+  els.massRegion1.addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    state.twoPart.region1.mass = isNaN(v) ? 0 : v;
+    compute(); save();
+  });
+  els.massRegion2.addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    state.twoPart.region2.mass = isNaN(v) ? 0 : v;
+    compute(); save();
+  });
+
+  document.getElementById("addBtn-carbon").addEventListener("click", () => {
+    state.carbon.rows.push({ formula: "", pct: 0 });
+    renderCarbonRows(); compute(); save();
+  });
+  document.getElementById("resetBtn-carbon").addEventListener("click", () => {
+    if (!confirm("Clear carbon-mode inputs and reset to the default example?")) return;
+    state.carbon = JSON.parse(JSON.stringify(defaultState.carbon));
+    renderCarbonRows();
+    els.massCarbon.value = state.carbon.mass;
+    compute(); save();
+  });
+  els.massCarbon.addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    state.carbon.mass = isNaN(v) ? 0 : v;
+    compute(); save();
+  });
+
+  const toast = document.getElementById("toast");
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1800);
+  }
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    const text = els.breakdown.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Copied to clipboard");
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); showToast("Copied to clipboard"); }
+      catch (err) { showToast("Copy failed"); }
+      document.body.removeChild(ta);
+    }
+  });
+  document.getElementById("downloadBtn").addEventListener("click", () => {
+    const text = "Degree of metallization calculation (mode: " + state.mode + ")\n" +
+      "Generated: " + new Date().toISOString() + "\n\n" + els.breakdown.textContent;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "RD_calculation_" + new Date().toISOString().slice(0,10) + ".txt";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
